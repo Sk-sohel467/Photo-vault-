@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Photo Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f0f0f;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        /* ========== Header ========== */
+        header {
+            background: #1a1a1a;
+            padding: 18px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #333;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .logo span {
+            color: #4fc3f7;
+        }
+
+        nav a {
+            color: #ccc;
+            text-decoration: none;
+            margin-left: 25px;
+            font-size: 15px;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #4fc3f7;
+        }
+
+        /* ========== Hero ========== */
+        .hero {
+            height: 55vh;
+            background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.7)), 
+                        url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1600') center/cover no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            animation: fadeIn 1.2s ease;
+        }
+
+        .hero h1 {
+            font-size: 46px;
+            margin-bottom: 12px;
+            font-weight: 300;
+            animation: slideUp 1s ease;
+        }
+
+        .hero p {
+            font-size: 17px;
+            color: #ccc;
+            max-width: 580px;
+            animation: slideUp 1.2s ease;
+        }
+
+        /* ========== Categories ========== */
+        .categories {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 35px 20px 15px;
+            background: #141414;
+        }
+
+        .cat-btn {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #ddd;
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .cat-btn:hover,
+        .cat-btn.active {
+            background: #4fc3f7;
+            color: #000;
+            border-color: #4fc3f7;
+            transform: translateY(-2px);
+        }
+
+        /* ========== Ad Placeholder Style ========== */
+        .ad-box {
+            background: #1a1a1a;
+            border: 2px dashed #555;
+            text-align: center;
+            padding: 28px 20px;
+            margin: 25px 40px;
+            border-radius: 10px;
+            color: #888;
+            font-size: 14px;
+            letter-spacing: 1px;
+            position: relative;
+        }
+
+        .ad-box::before {
+            content: "------------------ Ad code ------------------";
+            display: block;
+            color: #4fc3f7;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        /* ========== Gallery ========== */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 22px;
+            padding: 25px 40px 50px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .photo-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            cursor: pointer;
+            aspect-ratio: 4/3;
+            background: #222;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: cardFadeIn 0.7s ease forwards;
+        }
+
+        .photo-card:nth-child(1) { animation-delay: 0.1s; }
+        .photo-card:nth-child(2) { animation-delay: 0.2s; }
+        .photo-card:nth-child(3) { animation-delay: 0.3s; }
+        .photo-card:nth-child(4) { animation-delay: 0.4s; }
+        .photo-card:nth-child(5) { animation-delay: 0.5s; }
+        .photo-card:nth-child(6) { animation-delay: 0.6s; }
+        .photo-card:nth-child(7) { animation-delay: 0.7s; }
+        .photo-card:nth-child(8) { animation-delay: 0.8s; }
+
+        .photo-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.55s ease;
+        }
+
+        .photo-card:hover img {
+            transform: scale(1.1);
+        }
+
+        .photo-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 22px 15px 14px;
+            transform: translateY(100%);
+            transition: transform 0.35s ease;
+        }
+
+        .photo-card:hover .photo-info {
+            transform: translateY(0);
+        }
+
+        .photo-info h3 {
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        .photo-info p {
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        /* ========== Footer ========== */
+        footer {
+            background: #111;
+            text-align: center;
+            padding: 28px;
+            color: #777;
+            font-size: 14px;
+            border-top: 1px solid #222;
+        }
+
+        /* ========== Lightbox ========== */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.96);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 30px 15px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .lightbox.active {
+            display: block;
+        }
+
+        .lightbox-content {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: -5px;
+            right: 0;
+            font-size: 36px;
+            color: #fff;
+            background: none;
+            border: none;
+            cursor: pointer;
+            z-index: 10;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: #4fc3f7;
+        }
+
+        .lightbox-ad {
+            background: #1a1a1a;
+            border: 2px dashed #555;
+            text-align: center;
+            padding: 22px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            color: #888;
+            font-size: 14px;
+        }
+
+        .lightbox-ad::before {
+            content: "------------------ Ad code ------------------";
+            display: block;
+            color: #4fc3f7;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
+        .lightbox-img-box {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .lightbox-img-box img {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            animation: zoomIn 0.4s ease;
+        }
+
+        .lightbox-details {
+            background: #1a1a1a;
+            padding: 22px 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .lightbox-details h2 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .lightbox-details .description {
+            color: #ccc;
+            font-size: 15px;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            background: #2a2a2a;
+            color: #4fc3f7;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            border: 1px solid #333;
+        }
+
+        /* ========== Animations ========== */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(25px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes cardFadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.92);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* ========== Responsive ========== */
+        @media (max-width: 768px) {
+            header {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            nav a {
+                margin: 0 12px;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .gallery {
+                padding: 20px 15px 40px;
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 12px;
+            }
+
+            .ad-box {
+                margin: 20px 15px;
+            }
+
+            .lightbox-details h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo">Photo<span>Vault</span></div>
+        <nav>
+            <a href="#">Home</a>
+            <a href="#gallery">Gallery</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </nav>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <h1>Capturing Moments</h1>
+        <p>A personal collection of photographs from my journey through life and light.</p>
+    </section>
+
+    <!-- Categories -->
+    <div class="categories">
+        <button class="cat-btn active" onclick="filterPhotos('all')">All</button>
+        <button class="cat-btn" onclick="filterPhotos('nature')">Nature</button>
+        <button class="cat-btn" onclick="filterPhotos('travel')">Travel</button>
+        <button class="cat-btn" onclick="filterPhotos('portrait')">Portrait</button>
+        <button class="cat-btn" onclick="filterPhotos('street')">Street</button>
+        <button class="cat-btn" onclick="filterPhotos('architecture')">Architecture</button>
+    </div>
+
+    <!-- ====== TOP AD PLACEHOLDER ====== -->
+    <div class="ad-box">
+        Here you will paste your AdSense / Banner Ad code
+    </div>
+
+    <!-- Gallery -->
+    <section class="gallery" id="gallery">
+
+        <!-- Photo 1 -->
+        <div class="photo-card" 
+             data-category="nature"
+             data-title="Mountain Silence"
+             data-description="A peaceful view of the mountains during golden hour. The soft light creates a calm and timeless atmosphere."
+             data-tags="nature, mountain, landscape, golden hour, peaceful"
+             onclick="openLightbox(this)">
+            <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600" alt="Mountain Landscape" />
+            <div class="photo-info">
+                <h3>Mountain Silence</h3>
+                <p>Nature</p>
+            </div>
+        </div>
+
+        <!-- Photo 2 -->
+        <div class="photo-card" 
+             data-category="travel"
+             data-title="Open Road"
+             data-description="Endless road stretching into the horizon. A symbol of freedom and the joy of traveling without destination."
+             data-tags="travel, road, adventure, journey, freedom"
+             onclick="openLightbox(this)">
+            <img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600" alt="Travel Road" />
+            <div class="photo-info">
+                <h3>Open Road</h3>
+                <p>Travel</p>
+            </div>
+        </div>
+
+        <!-- Photo 3 -->
+        <div class="photo-card" 
+             data-category="portrait"
+             data-title="Quiet Gaze"
+             data-description="A soft and emotional portrait capturing the quiet intensity in the subject's eyes."
+             data-tags="portrait, people, emotion, soft light, closeup"
+             onclick="openLightbox(this)">
+            <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600" alt="Portrait" />
+            <div class="photo-info">
+                <h3>Quiet Gaze</h3>
+                <p>Portrait</p>
+            </div>
+        </div>
+
+        <!-- Photo 4 -->
+        <div class="photo-card" 
+             data-category="street"
+             data-title="City Lights"
+             data-description="Nighttime street photography showing the energy and glow of the city after dark."
+             data-tags="street, city, night, lights, urban"
+             onclick="openLightbox(this)">
+            <img src="https://images.unsplash.com/photo-1514565131-fce0801e5785?w=600" alt="Street" />
+            <div class="photo-info">
+                <h3>City Lights</h3>
+                <p>Street</p>
+            </div>
+        </div>
+
+        <!-- Photo 5 -->
+        <div class="photo-card" 
+             data-category="architecture"
+             data-title="Modern Lines"
+             data-description="Clean architectural lines and geometric patterns found in modern buildings."
+             data-tags="architecture, modern, geometric, building, design"
+             onclick="openLightbox(this)">
+            <img src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=600" alt="Architecture" />
+            <div class="photo-info">
+                <h3>Modern Lines</h3>
+                <p>Architecture</p>
+            </div>
+        </div>
+
+        <!-- Photo 6 -->
+        <div class="photo-card" 
+             data-category="nature"
+             data-title="Forest Path"
+             data-description="A quiet path through dense green forest. Perfect for those who love nature walks and solitude."
+             data-tags="nature, forest, path, green, trees"
+             onclick="openLightbox(this)">
+            <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600" alt="Forest" />
+            <div class="photo-info">
+                <h3>Forest Path</h3>
+                <p>Nature</p>
+            </div>
+        </div>
+
+        <!-- Photo 7 -->
+        <div class="photo-card" 
+             data-category="travel"
+             data-title="Still Water"
+             data-description="Crystal clear lake reflecting the surrounding mountains under a soft cloudy sky."
+             data-tags="travel, lake, reflection, mountain, peaceful"
+             onclick="openLightbox(this)">
+            <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600" alt="Lake" />
+            <div class="photo-info">
+                <h3>Still Water</h3>
+                <p>Travel</p>
+            </div>
+        </div>
+
+        <!-- Photo 8 -->
+        <div class="photo-card" 
+             data-category="portrait"
+             data-title="Soft Light"
+             data-description="Natural window light creating a gentle and warm portrait atmosphere."
+             data-tags="portrait, soft light, natural, warm, people"
+             onclick="openLightbox(this)">
+            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600" alt="Portrait 2" />
+            <div class="photo-info">
+                <h3>Soft Light</h3>
+                <p>Portrait</p>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ====== BOTTOM AD PLACEHOLDER ====== -->
+    <div class="ad-box">
+        Here you will paste your AdSense / Banner Ad code
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 PhotoVault — All Rights Reserved</p>
+        <p style="margin-top: 6px; font-size: 13px;">Personal Photography Portfolio</p>
+    </footer>
+
+    <!-- ==================== LIGHTBOX ==================== -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+
+            <button class="close-btn" onclick="closeLightbox()">×</button>
+
+            <!-- AD ABOVE IMAGE -->
+            <div class="lightbox-ad">
+                Here you will paste your AdSense code (Above Image)
+            </div>
+
+            <!-- IMAGE -->
+            <div class="lightbox-img-box">
+                <img src="" alt="Full size photo" id="lightbox-img" />
+            </div>
+
+            <!-- DETAILS (Title + Description + Tags) -->
+            <div class="lightbox-details">
+                <h2 id="lightbox-title">Photo Title</h2>
+                <p class="description" id="lightbox-description">Photo description will appear here...</p>
+                <div class="tags" id="lightbox-tags">
+                    <!-- Tags will be added by JavaScript -->
+                </div>
+            </div>
+
+            <!-- AD BELOW IMAGE -->
+            <div class="lightbox-ad">
+                Here you will paste your AdSense code (Below Image)
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Filter Photos by Category
+        function filterPhotos(category) {
+            const cards = document.querySelectorAll('.photo-card');
+            const buttons = document.querySelectorAll('.cat-btn');
+
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Open Lightbox
+        function openLightbox(card) {
+            const imgSrc = card.querySelector('img').src;
+            const title = card.dataset.title;
+            const description = card.dataset.description;
+            const tags = card.dataset.tags;
+
+            // Set Image
+            document.getElementById('lightbox-img').src = imgSrc.replace('w=600', 'w=1400');
+
+            // Set Title & Description
+            document.getElementById('lightbox-title').textContent = title;
+            document.getElementById('lightbox-description').textContent = description;
+
+            // Set Tags
+            const tagsContainer = document.getElementById('lightbox-tags');
+            tagsContainer.innerHTML = '';
+            tags.split(',').forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'tag';
+                span.textContent = tag.trim();
+                tagsContainer.appendChild(span);
+            });
+
+            // Show Lightbox
+            document.getElementById('lightbox').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close Lightbox
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close when clicking outside
+        document.getElementById('lightbox').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeLightbox();
+            }
+        });
+
+        // Close with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeLightbox();
+            }
+        });
+    </script>
+
+</body>
+</html>
